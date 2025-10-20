@@ -1,0 +1,19 @@
+# requirements.txt
+
+# Core Data Handling and Utilities
+pandas
+numpy
+biopython
+
+# Cheminformatics
+rdkit-pypi
+
+# Deep Learning Framework (CUDA 12.x compatible)
+# Note: PyTorch recommends installing with the specific CUDA command below
+torch==2.1.0
+torchvision==0.16.0
+torchaudio==2.1.0
+
+# Graph Neural Network Framework (CUDA 12.x compatible)
+# Note: PyG and its dependencies must be installed separately using the CUDA commands below
+torch-geometric
