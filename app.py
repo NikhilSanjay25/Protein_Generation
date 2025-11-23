@@ -635,97 +635,121 @@ with tab1:
                 c1.metric("H-Bond Donors", f"{props.get('HBD', 0)}")
 
 
-# --- TAB 2: MODEL ANALYSIS ---
-# --- TAB 2: MODEL ANALYSIS ---
+# =========================================
+# 🛠️ USER CONFIGURATION: PASTE YOUR PATHS HERE
+# =========================================
+class ImagePaths:
+    # --- SECTION 1: LOSS CURVES ---
+    LOSS_MAIN   = r"C:\Users\nikhi\Downloads\our_training.png"     # Your WGAN Model
+    LOSS_BASE1  = r"C:\Users\nikhi\Downloads\baselinewgan_training_test.png"        # Baseline 1
+    LOSS_BASE2  = r"C:\Users\nikhi\Downloads\nobond_training.png"     # Baseline 2
+
+    # --- SECTION 2: PROPERTIES (MW, LogP, QED) ---
+    PROPS_MAIN  = r"C:\Users\nikhi\Downloads\our_metrics.png"
+    PROPS_BASE1 = r"C:\Users\nikhi\Downloads\baselinewgan_indexes.png"
+    PROPS_BASE2 = r"C:\Users\nikhi\Downloads\nobond_props.png"
+
+    # --- SECTION 3: PCA / CHEMICAL SPACE ---
+    PCA_MAIN    = r"C:\Users\nikhi\Downloads\our_pca.png"
+    PCA_BASE1   = r"C:\Users\nikhi\Downloads\baselinewgan_pca.png"
+    PCA_BASE2   = r"C:\Users\nikhi\Downloads\nobond_pca.png"
+
+    # --- SECTION 4: DIVERSITY (Tanimoto) ---
+    DIV_MAIN    = r"C:\Users\nikhi\Downloads\our_tanimoto.png"
+    DIV_BASE1   = r"C:\Users\nikhi\Downloads\baselinewgan_tanimoto.png"
+    DIV_BASE2   = r"C:\Users\nikhi\Downloads\nobond_tanimoto.png"
+    
+    # --- NAMES FOR LABELS ---
+    NAME_MAIN   = "Current: WGAN-GP"
+    NAME_BASE1  = "Baseline 1: BASELINE SIMPLE WGAN"
+    NAME_BASE2  = "Baseline 2: BASELINE WGAN With no Bond Adjacency"
+
+
+# =========================================
+# HELPER: DISPLAY FUNCTION
+# =========================================
+def render_comparison_row(main_path, base1_path, base2_path):
+    """
+    Dynamically renders 1, 2, or 3 columns based on which paths are provided.
+    """
+    # 1. Check which files actually exist
+    show_main = main_path and os.path.exists(main_path)
+    show_b1   = base1_path and os.path.exists(base1_path)
+    show_b2   = base2_path and os.path.exists(base2_path)
+
+    if not (show_main or show_b1 or show_b2):
+        st.warning("⚠️ No images found for this section. Check paths in `ImagePaths` class.")
+        return
+
+    # 2. Create columns (always 3 for consistent alignment, even if empty)
+    col1, col2, col3 = st.columns(3)
+
+    # --- Column 1: Baseline 1 ---
+    with col1:
+        if show_b1:
+            st.caption(f"**{ImagePaths.NAME_BASE1}**")
+            st.image(base1_path, use_container_width=True)
+
+    # --- Column 2: MAIN MODEL (Center) ---
+    with col2:
+        if show_main:
+            st.caption(f"**{ImagePaths.NAME_MAIN}**")
+            st.image(main_path, use_container_width=True)
+        else:
+            if main_path: st.warning(f"File not found: {main_path}")
+
+    # --- Column 3: Baseline 2 ---
+    with col3:
+        if show_b2:
+            st.caption(f"**{ImagePaths.NAME_BASE2}**")
+            st.image(base2_path, use_container_width=True)
+
+# =========================================
+# TAB 2: UI IMPLEMENTATION
+# =========================================
 with tab2:
-    st.header(f"Analysis of Model (Epoch {Config.BEST_EPOCH})")
-    st.info(f"These analyses are based on the pre-generated file: `{Config.GENERATED_FILE}`")
+    st.header("Comparative Model Analysis")
+    st.markdown("Visual comparison of generated molecules against baselines.")
 
-    # --- THIS IS THE NEW EXPANDER ---
-    with st.expander("📈 Training Loss Dynamics (Combined Plot)", expanded=True):
-        combined_loss_fig = analysis_plot_loss_combined()
-        if combined_loss_fig:
-            st.pyplot(combined_loss_fig)
-        else:
-            st.warning(f"Could not find log file at {Config.get_log_path()}.")
-    # --- END OF NEW EXPANDER ---
+    # 1. LOSS
+    with st.expander("📈 Training Loss Dynamics", expanded=True):
+        render_comparison_row(
+            ImagePaths.LOSS_MAIN, 
+            ImagePaths.LOSS_BASE1, 
+            ImagePaths.LOSS_BASE2
+        )
 
-    with st.expander("📈 Training Loss Dynamics (Separate Plots)"):
-        loss_fig = analysis_plot_loss()
-        if loss_fig:
-            st.pyplot(loss_fig)
-        else:
-            st.warning(f"Could not find log file at {Config.get_log_path()}.")
+    # 2. PROPERTIES
+    with st.expander("🔬 Physicochemical Properties (Distributions)"):
+        render_comparison_row(
+            ImagePaths.PROPS_MAIN, 
+            ImagePaths.PROPS_BASE1, 
+            ImagePaths.PROPS_BASE2
+        )
 
-    with st.expander("🔬 Physicochemical Properties (of generated set)"):
-        stats_df, props_fig = analysis_physchem()
-        if props_fig:
-            st.pyplot(props_fig)
-            st.subheader("Summary Statistics")
-            st.dataframe(stats_df.round(3), use_container_width=True)
-        else:
-            st.warning(f"Could not find generated file at {Config.get_generated_csv_path()}.")
+    # 3. PCA
+    with st.expander("🌌 Chemical Space (PCA)"):
+        render_comparison_row(
+            ImagePaths.PCA_MAIN, 
+            ImagePaths.PCA_BASE1, 
+            ImagePaths.PCA_BASE2
+        )
 
-    with st.expander("⚖️ Comparative Property Distributions (Generated vs. Real)"):
-        comp_fig, comp_stats = analysis_property_comparison()
-        if isinstance(comp_fig, str):
-            st.warning(f"Error: {comp_fig}")
-        elif comp_fig:
-            st.pyplot(comp_fig)
-            st.subheader("Mean Properties Comparison")
-            st.dataframe(comp_stats.round(3))
-        else:
-            st.warning("Could not generate comparative plot.")
-            
-    with st.expander("🌌 Chemical Space Visualization (PCA)"):
-        pca_fig = analysis_pca()
-        if isinstance(pca_fig, str):
-            st.warning(f"Error: {pca_fig}")
-        elif pca_fig:
-            st.pyplot(pca_fig)
-        else:
-            st.warning("Could not generate PCA plot.")
-
-    with st.expander("✨ Novelty, Diversity & Scaffolds"):
-        st.subheader("Key Performance Metrics")
+    # 4. DIVERSITY
+    with st.expander("✨ Internal Diversity (Tanimoto Similarity)"):
+        render_comparison_row(
+            ImagePaths.DIV_MAIN, 
+            ImagePaths.DIV_BASE1, 
+            ImagePaths.DIV_BASE2
+        )
         
-        # --- Top-line metrics ---
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            score, novel_count, total_gen, samples = analysis_novelty()
-            if isinstance(score, str):
-                st.warning(f"Novelty Error: {score}")
-            else:
-                st.metric("Molecule Novelty", f"{score:.2f}%", f"{novel_count} / {total_gen} novel")
-                
-        with col2:
-            diversity, avg_sim, div_fig = analysis_diversity()
-            if diversity is not None:
-                st.metric("Internal Diversity (1 - Sim)", f"{diversity:.4f}", help="0=all same, 1=all different")
-                st.metric("Avg. Tanimoto Similarity", f"{avg_sim:.4f}")
-            else:
-                st.warning("Could not calculate diversity.")
-                
-        with col3:
-            rate, novel_scaff_count, total_scaffs = analysis_scaffolds()
-            if isinstance(rate, str):
-                st.warning(f"Scaffold Error: {rate}")
-            else:
-                st.metric("Scaffold Novelty", f"{rate:.1f}%", f"{novel_scaff_count} / {total_scaffs} novel")
-        
-        st.markdown("---")
-        
-        # --- Plots and Details ---
-        c1, c2 = st.columns([1, 2])
-        with c1:
-            st.subheader("Diversity Distribution")
-            if div_fig:
-                st.pyplot(div_fig, use_container_width=True)
-        
-        with c2:
-            st.subheader("Novelty Details")
-            if samples:
-                st.write("Sample Novel Molecules (sorted by length, desc):")
-                st.code("\n".join(samples))
-            else:
-                st.info("No novel molecules found or error in calculation.")
+    # 5. MANUAL METRICS TABLE (Optional)
+    with st.expander("📊 Quantitative Metrics Table"):
+        # You can hardcode your final numbers here
+        metrics_data = {
+            "Metric": ["Novelty (%)", "Uniqueness (%)", "Validity (%)", "Internal Diversity", "Scaffold Novelty"],
+            ImagePaths.NAME_BASE1: ["88.97", "99.1", "66.8", "0.89", "76.1"], # Replace with baseline WGAN stats
+            ImagePaths.NAME_MAIN:  ["99.63", "99.9", "92.1", "0.89", "97.2"], # Replace with WGAN stats
+            ImagePaths.NAME_BASE2: ["97.46", "86.5", "100", "0.87", "85.7"], # Replace with simplified bond stats
+        }
+        st.table(pd.DataFrame(metrics_data).set_index("Metric"))
