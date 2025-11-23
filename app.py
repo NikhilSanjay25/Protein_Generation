@@ -567,13 +567,12 @@ def analysis_scaffolds():
 
 st.set_page_config(
     page_title="WGAN-GP Molecule Generator",
-    page_icon="🧬",
     layout="wide"
 )
 
 # --- Sidebar for Controls ---
 with st.sidebar:
-    st.header("🔬 Generation Controls")
+    st.header("Generation Controls")
     temp_slider = st.slider(
         "Generation Temperature", 
         0.1, 2.0, 0.8, 0.1,
@@ -581,7 +580,7 @@ with st.sidebar:
     )
     
     st.markdown("---")
-    st.header("ℹ️ Model Info")
+    st.header(" Model Info")
     st.info(f"**Epoch:** {Config.BEST_EPOCH}\n\n**Device:** {Config.DEVICE}\n\n**SA Score:** {'Enabled' if SA_SCORE_ENABLED else 'Disabled'}")
     
 
@@ -591,7 +590,7 @@ st.markdown(f"An interactive dashboard to generate and analyze molecules from a 
 
 
 # --- Define Tabs ---
-tab1, tab2 = st.tabs(["🧪 Generate Molecules", "📊 Analyze Model"])
+tab1, tab2 = st.tabs(["Generate Molecules", "Model Analysis"])
 
 # --- TAB 1: MOLECULE GENERATION ---
 with tab1:
@@ -712,7 +711,7 @@ with tab2:
     st.markdown("Visual comparison of generated molecules against baselines.")
 
     # 1. LOSS
-    with st.expander("📈 Training Loss Dynamics", expanded=True):
+    with st.expander(" Training Loss Dynamics", expanded=True):
         render_comparison_row(
             ImagePaths.LOSS_MAIN, 
             ImagePaths.LOSS_BASE1, 
@@ -720,7 +719,7 @@ with tab2:
         )
 
     # 2. PROPERTIES
-    with st.expander("🔬 Physicochemical Properties (Distributions)"):
+    with st.expander(" Physicochemical Properties (Distributions)"):
         render_comparison_row(
             ImagePaths.PROPS_MAIN, 
             ImagePaths.PROPS_BASE1, 
@@ -728,7 +727,7 @@ with tab2:
         )
 
     # 3. PCA
-    with st.expander("🌌 Chemical Space (PCA)"):
+    with st.expander(" Chemical Space (PCA)"):
         render_comparison_row(
             ImagePaths.PCA_MAIN, 
             ImagePaths.PCA_BASE1, 
@@ -736,7 +735,7 @@ with tab2:
         )
 
     # 4. DIVERSITY
-    with st.expander("✨ Internal Diversity (Tanimoto Similarity)"):
+    with st.expander(" Internal Diversity (Tanimoto Similarity)"):
         render_comparison_row(
             ImagePaths.DIV_MAIN, 
             ImagePaths.DIV_BASE1, 
@@ -744,12 +743,12 @@ with tab2:
         )
         
     # 5. MANUAL METRICS TABLE (Optional)
-    with st.expander("📊 Quantitative Metrics Table"):
+    with st.expander(" Quantitative Metrics Table"):
         # You can hardcode your final numbers here
         metrics_data = {
-            "Metric": ["Novelty (%)", "Uniqueness (%)", "Validity (%)", "Internal Diversity", "Scaffold Novelty"],
-            ImagePaths.NAME_BASE1: ["88.97", "99.1", "66.8", "0.89", "76.1"], # Replace with baseline WGAN stats
-            ImagePaths.NAME_MAIN:  ["99.63", "99.9", "92.1", "0.89", "97.2"], # Replace with WGAN stats
-            ImagePaths.NAME_BASE2: ["97.46", "86.5", "100", "0.87", "85.7"], # Replace with simplified bond stats
+            "Metric": ["Novelty (%)", "HBA Score(Mean)","HBD Score(Mean)", "Internal Diversity", "Scaffold Novelty(%)"],
+            ImagePaths.NAME_BASE1: ["88.97", "1.700","1.114", "0.89", "76.1"], # Replace with baseline WGAN stats
+            ImagePaths.NAME_MAIN:  ["99.63", "1.342", "1.014","0.89", "97.2"], # Replace with WGAN stats
+            ImagePaths.NAME_BASE2: ["97.46", "2.275", "1.464","0.87", "85.7"], # Replace with simplified bond stats
         }
         st.table(pd.DataFrame(metrics_data).set_index("Metric"))
