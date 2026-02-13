@@ -1,4 +1,4 @@
-#Molecule Generation with WGAN-GP
+### Molecule Generation with WGAN-GP
 This project implements a generative model to create novel small molecules using a Wasserstein Generative Adversarial Network with Gradient Penalty (WGAN-GP). The models are trained on a subset of the ChEMBL dataset, focusing on small molecule candidates with 9 atoms or less.
 
 Project Structure
